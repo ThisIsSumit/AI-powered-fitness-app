@@ -2,6 +2,9 @@
 
 A comprehensive fitness tracking application built with microservices architecture using Spring Boot and React. The application allows users to track their workouts, monitor progress, and get AI-powered insights to reach their fitness goals.
 
+## 🎥 Demo Video
+[Click here to watch the demo](https://github.com/user-attachments/assets/835908d3-523b-48fe-be9d-5c7d78c91fa1)
+
 ## 🏗️ Architecture Overview
 
 This application follows a microservices architecture pattern with the following components:
