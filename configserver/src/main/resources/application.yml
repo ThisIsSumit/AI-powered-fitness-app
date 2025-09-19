@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+
+server:
+  port: 8888
+
+java:
+  net:
+    preferIPv4Stack: true
