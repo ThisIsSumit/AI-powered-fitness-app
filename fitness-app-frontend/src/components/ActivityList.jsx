@@ -33,7 +33,7 @@ const getActivityIcon = (type) => {
       WALKING: <DirectionsWalk />,
       CYCLING: <DirectionsBike />,
       SWIMMING: <Pool />,
-      WEIGHTLIFTING: <FitnessCenter />,
+      WEIGHT_TRAINING: <FitnessCenter />,
       YOGA: <SelfImprovement />
   };
   return icons[type] || <FitnessCenter />;
@@ -45,13 +45,20 @@ const getActivityColor = (type) => {
       WALKING: '#4ECDC4',
       CYCLING: '#45B7D1',
       SWIMMING: '#96CEB4',
-      WEIGHTLIFTING: '#FFEAA7',
+      WEIGHT_TRAINING: '#FFEAA7',
       YOGA: '#DDA0DD'
   };
   return colors[type] || '#95E1D3';
 };
 const ActivityCard = ({ activity }) => {
   const navigate = useNavigate();
+  
+  // Add safety check for activity prop
+  if (!activity || !activity.id) {
+    console.warn('ActivityCard received invalid activity:', activity);
+    return null;
+  }
+  
   console.log('Rendering ActivityCard for activity:', activity);
   
   return (
@@ -65,7 +72,7 @@ const ActivityCard = ({ activity }) => {
                       boxShadow: 6,
                       cursor: 'pointer'
                   },
-                  borderLeft: `4px solid ${getActivityColor(activity.type)}`,
+                  borderLeft: `4px solid ${getActivityColor(activity.type || 'UNKNOWN')}`,
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)'
               }}
               onClick={() => navigate(`/activities/${activity.id}`)}
@@ -76,15 +83,15 @@ const ActivityCard = ({ activity }) => {
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Box 
                               sx={{ 
-                                  color: getActivityColor(activity.type),
+                                  color: getActivityColor(activity.type || 'UNKNOWN'),
                                   mr: 1,
                                   display: 'flex'
                               }}
                           >
-                              {getActivityIcon(activity.type)}
+                              {getActivityIcon(activity.type || 'UNKNOWN')}
                           </Box>
                           <Typography variant='h6' sx={{ fontWeight: 600 }}>
-                              {activity.type.charAt(0) + activity.type.slice(1).toLowerCase()}
+                              {activity.type ? activity.type.charAt(0) + activity.type.slice(1).toLowerCase() : 'Unknown Activity'}
                           </Typography>
                       </Box>
                       
@@ -92,13 +99,13 @@ const ActivityCard = ({ activity }) => {
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <AccessTime sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
                               <Typography variant="body2" color="text.secondary">
-                                  {activity.duration} minutes
+                                  {activity.duration || 0} minutes
                               </Typography>
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <LocalFireDepartment sx={{ fontSize: 16, mr: 1, color: '#FF6B6B' }} />
                               <Typography variant="body2" color="text.secondary">
-                                  {activity.caloriesBurned} calories
+                                  {activity.caloriesBurned || 0} calories
                               </Typography>
                           </Box>
                       </Box>
@@ -195,7 +202,9 @@ const ActivityList = () => {
           </Box>
           
           <Grid container spacing={3}>
-              {(activities || []).map((activity) => (
+              {(activities || [])
+                .filter(activity => activity && activity.id) // Filter out invalid activities
+                .map((activity) => (
                   <Grid item xs={12} sm={6} md={4} key={activity.id}>
                       <ActivityCard activity={activity} />
                   </Grid>

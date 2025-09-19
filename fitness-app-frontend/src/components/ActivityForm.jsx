@@ -48,11 +48,13 @@ const ActivityForm = () => {
         if (!validateForm()) return;
 
         try {
-            await dispatch(createActivity({
+            const result = await dispatch(createActivity({
                 ...activity,
                 duration: parseInt(activity.duration),
                 caloriesBurned: parseInt(activity.caloriesBurned)
             })).unwrap();
+            
+            console.log('Activity created successfully:', result); // Debug log
             
             // Reset form on success
             setActivity({ 
@@ -108,7 +110,7 @@ const ActivityForm = () => {
                         <MenuItem value="WALKING">🚶‍♂️ Walking</MenuItem>
                         <MenuItem value="CYCLING">🚴‍♂️ Cycling</MenuItem>
                         <MenuItem value="SWIMMING">🏊‍♂️ Swimming</MenuItem>
-                        <MenuItem value="WEIGHTLIFTING">🏋️‍♂️ Weight Lifting</MenuItem>
+                        <MenuItem value="WEIGHT_TRAINING">🏋️‍♂️ Weight Lifting</MenuItem>
                         <MenuItem value="YOGA">🧘‍♀️ Yoga</MenuItem>
                     </Select>
                 </FormControl>

@@ -24,9 +24,10 @@ import {
     CheckCircleOutline, 
     LightbulbOutlined, 
     SecurityOutlined,
-    TrendingUpOutlined 
+    TrendingUpOutlined,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
-import { fetchActivityDetail, clearCurrentActivity } from '../store/activitiesSlice';
+import { fetchActivityDetail, clearCurrentActivity, removeActivity } from '../store/activitiesSlice';
 
 const ActivityDetail = () => {
     const { id } = useParams();
@@ -77,6 +78,17 @@ const ActivityDetail = () => {
 
     const handleGoBack = () => {
         navigate('/activities');
+    };
+
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this activity?')) {
+            try {
+                await dispatch(removeActivity(id)).unwrap();
+                navigate('/activities'); // Navigate back after successful deletion
+            } catch (error) {
+                console.error('Failed to delete activity:', error);
+            }
+        }
     };
 
     if (fetchingDetail) {
@@ -145,14 +157,24 @@ const ActivityDetail = () => {
                         >
                             <ArrowBack />
                         </IconButton>
+                        <IconButton 
+                            onClick={handleDelete}
+                            sx={{ 
+                                backgroundColor: 'error.main',
+                                color: 'white',
+                                '&:hover': { backgroundColor: 'error.dark' }
+                            }}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
                         <Typography variant="h4" sx={{ fontWeight: 600 }}>
                             Activity Details
                         </Typography>
                     </Box>
 
-                    <Card sx={{ mb: 3, borderRadius: 2 }} elevation={3}>
+                    <Card sx={{ mb: 3, borderRadius: 2 ,display: 'flex', flexDirection: 'column'}} elevation={3}>
                         <CardContent sx={{ p: 3 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                                     {/* Handle both type and activityType fields */}
                                     {(currentActivity.activityType || currentActivity.type || 'Activity').charAt(0) + 
@@ -165,31 +187,17 @@ const ActivityDetail = () => {
                                 />
                             </Box>
                             
-                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
-                                {/* Show activity ID if available */}
-                                {currentActivity.activityId && (
-                                    <Box>
-                                        <Typography color="text.secondary" variant="body2">Activity ID</Typography>
-                                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                            {currentActivity.activityId}
-                                        </Typography>
-                                    </Box>
-                                )}
-                                <Box>
+                            
+                              
+                            <Box>
                                     <Typography color="text.secondary" variant="body2">Date</Typography>
                                     <Typography variant="h6">
                                         {new Date(currentActivity.createdAt).toLocaleDateString()}
                                     </Typography>
                                 </Box>
-                                <Box>
-                                    <Typography color="text.secondary" variant="body2">User ID</Typography>
-                                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                                        {currentActivity.userId}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </CardContent>
-                    </Card>
+
+                            </CardContent>
+                        </Card>
 
                     {currentActivity.recommendation && (
                         <Card elevation={3} sx={{ borderRadius: 2 }}>

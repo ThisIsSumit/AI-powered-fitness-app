@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getActivities, getActivityDetail, addActivity } from '../services/api';
+import { getActivities, getActivityDetail, addActivity, deleteActivity } from '../services/api';
 
 // Async thunks for API calls
 export const fetchActivities = createAsyncThunk(
@@ -35,9 +35,25 @@ export const createActivity = createAsyncThunk(
   async (activityData, { rejectWithValue }) => {
     try {
       const response = await addActivity(activityData);
-      return response.data;
+      console.log('Create activity API response:', response); // Debug log
+      // Handle both response.data and direct response formats
+      return response.data || response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      console.error('Error creating activity:', error); // Debug log
+      return rejectWithValue(error.message || 'Failed to create activity');
+    }
+  }
+);
+
+export const removeActivity = createAsyncThunk(
+  'activities/removeActivity',
+  async (id, { rejectWithValue }) => {
+    try {
+      await deleteActivity(id);
+      return id; // Return the deleted activity ID
+    } catch (error) {
+      console.error('Error deleting activity:', error); // Debug log
+      return rejectWithValue(error.message || 'Failed to delete activity');
     }
   }
 );
@@ -50,7 +66,8 @@ const activitiesSlice = createSlice({
     loading: false,
     error: null,
     addingActivity: false,
-    fetchingDetail: false
+    fetchingDetail: false,
+    deletingActivity: false
   },
   reducers: {
     clearError: (state) => {
@@ -96,10 +113,31 @@ const activitiesSlice = createSlice({
       })
       .addCase(createActivity.fulfilled, (state, action) => {
         state.addingActivity = false;
-        state.activities.unshift(action.payload); // Add to beginning
+        // Ensure the new activity is properly added to the beginning
+        if (action.payload && action.payload.id) {
+          state.activities.unshift(action.payload);
+        }
       })
       .addCase(createActivity.rejected, (state, action) => {
         state.addingActivity = false;
+        state.error = action.payload;
+      })
+      // Delete activity
+      .addCase(removeActivity.pending, (state) => {
+        state.deletingActivity = true;
+        state.error = null;
+      })
+      .addCase(removeActivity.fulfilled, (state, action) => {
+        state.deletingActivity = false;
+        // Remove the deleted activity from the list
+        state.activities = state.activities.filter(activity => activity.id !== action.payload);
+        // Clear current activity if it was the one deleted
+        if (state.currentActivity && state.currentActivity.id === action.payload) {
+          state.currentActivity = null;
+        }
+      })
+      .addCase(removeActivity.rejected, (state, action) => {
+        state.deletingActivity = false;
         state.error = action.payload;
       });
   }
